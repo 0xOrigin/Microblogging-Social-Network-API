@@ -4,14 +4,15 @@ from rest_framework.response import Response
 from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView as JwtTokenRefreshView
+from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from core.renderers import BaseJSONRenderer
-from core.views import BaseViewSet, NonCreatableViewSet
+from core.views import BaseViewSet, NonCreatableViewSet, NonUpdatableViewSet, NonDeletableViewSet
 from iam.authentication import set_jwt_cookies, unset_jwt_cookies
 from iam.filters import UserFilter
-from iam.permissions import UserPermissions
-from iam.models import User
-from iam.serializers import UserSerializer, UserRegistrationSerializer
+from iam.permissions import UserPermissions, FollowPermissions
+from iam.models import User, Follow
+from iam.serializers import UserSerializer, UserRegistrationSerializer, FollowSerializer
 
 
 class BaseUserGenericAPIView(generics.GenericAPIView):
@@ -63,3 +64,31 @@ class UserViewSet(NonCreatableViewSet, BaseViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class FollowViewSet(NonUpdatableViewSet, NonDeletableViewSet, BaseViewSet):
+    model = Follow
+    serializer_class = FollowSerializer
+    permission_classes = [FollowPermissions,]
+
+    def get_queryset(self):
+        return (
+            super().get_queryset()
+            .prefetch_related('followee')
+            .filter(follower=self.kwargs.get('user_pk'))
+        )
+
+    def get_serializer_context(self):
+        context =  super().get_serializer_context()
+        context['followee_pk'] = self.kwargs.get('user_pk')
+        return context
+
+    @action(detail=False, methods=['delete'], url_name='unfollow', url_path='unfollow', permission_classes=[FollowPermissions])
+    def unfollow(self, request, *args, **kwargs):
+        queryset = (
+            super().get_queryset()
+            .filter(follower=request.user, followee=self.kwargs.get('user_pk'))
+        )
+        instance = get_object_or_404(queryset)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

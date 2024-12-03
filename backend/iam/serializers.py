@@ -8,7 +8,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from core.serializers import BaseSerializer
 from core.utils import dynamic_exclude
-from iam.models import User
+from iam.models import User, Follow
 from iam.emails import send_user_registration_email
 
 
@@ -105,3 +105,43 @@ class UserRegistrationSerializer(UserSerializer):
         instance = super().create(validated_data)
         send_user_registration_email(instance)
         return instance
+
+
+class FollowSerializer(BaseSerializer):
+
+    class Meta:
+        model = Follow
+        exclude = dynamic_exclude(model, extra_fields=['follower'])
+        extra_kwargs = {
+            'followee': {'read_only': True},
+        }
+
+    def get_nested_serializer_fields(self) -> dict:
+        data = super().get_nested_serializer_fields()
+        data.update({
+            'followee': {
+                'serializer': UserSerializer,
+                'kwargs': {'context': self.context},
+            },
+        })
+        return data
+
+    def set_from_context(self, validated_data):
+        super().set_from_context(validated_data)
+        validated_data['follower'] = self.get_current_user()
+        if 'followee_pk' in self.context:
+            validated_data['followee_id'] = self.context.get('followee_pk')
+
+    def validate_follower_followee_not_equal(self, follower, followee):
+        if str(follower) == str(followee):
+            raise serializers.ValidationError(_('You cannot follow yourself!'))
+
+    def validate_follower_followee_unique_together(self, follower, followee):
+        if Follow.objects.filter(follower=follower, followee=followee).exists():
+            raise serializers.ValidationError(_('You are already following this user'))
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        self.validate_follower_followee_not_equal(self.get_current_user().pk, self.context.get('followee_pk'))
+        self.validate_follower_followee_unique_together(self.get_current_user(), self.context.get('followee_pk'))
+        return attrs

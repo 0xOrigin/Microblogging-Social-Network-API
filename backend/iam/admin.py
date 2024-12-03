@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from core.utils import dynamic_admin_readonly_fields
 from core.admin import BaseAuditAdmin
-from iam.models import User
+from iam.models import User, Follow
 
 
 @admin.register(User)
@@ -51,3 +51,8 @@ class UserAdmin(BaseAuditAdmin, BaseUserAdmin):
 
     def deactivate_selected_users(self, request, queryset):
         queryset.update(is_active=False)
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    pass

@@ -1,12 +1,12 @@
 from django.db import models
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from core.utils import get_random_file_name
-from core.models import BaseManager, BaseAuditModel
+from core.models import BaseManager, BaseAuditModel, BaseAuditCreateModel
 
 
 class UserManager(BaseUserManager, BaseManager):
@@ -78,3 +78,20 @@ class User(AbstractUser, BaseAuditModel):
 
     def __str__(self) -> str:
         return f"{self.email}"
+
+
+class Follow(BaseAuditCreateModel):
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='followings')
+    followee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='followers')
+
+    class Meta:
+        db_table = 'Follow'
+        unique_together = ('follower', 'followee')
+        indexes = [
+            models.Index(fields=['id']),
+            models.Index(fields=['follower']),
+            models.Index(fields=['followee']),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.follower} follows {self.followee}"

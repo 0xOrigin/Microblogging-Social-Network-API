@@ -1,5 +1,6 @@
 from core.permissions import BasePermissions
 
+
 class UserPermissions(BasePermissions):
 
     def has_permission(self, request, view):
@@ -21,3 +22,9 @@ class UserPermissions(BasePermissions):
             return True
 
         return obj.pk == user.pk
+
+
+class FollowPermissions(BasePermissions):
+
+    def has_object_permission(self, request, view, obj):
+        return obj.follower.pk == request.user.pk
