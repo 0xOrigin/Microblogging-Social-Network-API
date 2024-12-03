@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     # new applications.
     'iam.apps.IamConfig',
+    'tweets.apps.TweetsConfig',
 ]
 
 if DEBUG and ALLOW_DJANGO_DEBUG_TOOLBAR:

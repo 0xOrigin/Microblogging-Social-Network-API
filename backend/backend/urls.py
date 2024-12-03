@@ -7,6 +7,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('iam.urls', namespace='iam-api')),
+    path('', include('tweets.urls', namespace='tweets-api')),
 ]
 
 # Schema URLs
