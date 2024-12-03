@@ -1,0 +1,50 @@
+upstream flower_dev_app {
+    server flower_dev:$FLOWER_DEV_PORT;
+}
+
+upstream backend_dev_app {
+    server django_dev:$BACKEND_DEV_PORT;
+}
+
+
+server {
+    listen $FLOWER_EXPOSED_DEV_PORT;
+    listen [::]:$FLOWER_EXPOSED_DEV_PORT;
+    server_name $NGINX_DEV_HOST;
+    access_log /var/log/nginx/flower_dev.access.log main;
+    error_log /var/log/nginx/flower_dev.error.log;
+    access_log /dev/stdout main;
+    error_log stderr;
+
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Real-IP $remote_addr;
+
+    location / {
+        proxy_pass http://flower_dev_app/;
+        proxy_redirect off;
+    }
+}
+
+
+server {
+    listen $BACKEND_EXPOSED_DEV_PORT;
+    listen [::]:$BACKEND_EXPOSED_DEV_PORT;
+    server_name $NGINX_DEV_HOST;
+    access_log /var/log/nginx/django_dev.access.log main;
+    error_log /var/log/nginx/django_dev.error.log;
+    access_log /dev/stdout main;
+    error_log stderr;
+
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Real-IP $remote_addr;
+
+    location / {
+        proxy_pass http://backend_dev_app/;
+        proxy_redirect off;
+    }
+
+}
