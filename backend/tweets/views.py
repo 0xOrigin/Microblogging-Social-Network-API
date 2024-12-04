@@ -12,6 +12,9 @@ class TweetViewSet(BaseViewSet):
     permission_classes = [TweetPermissions,]
 
     def get_queryset(self):
+        if self.request.user.is_anonymous: # For browsable api issue
+            return super().get_queryset().order_by('-created_at')
+
         return (
             super().get_queryset()
             .prefetch_related('created_by')
