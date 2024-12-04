@@ -20,7 +20,7 @@ A minimal Microblogging Social Network API written in (Python/Django).
 - The application should now be accessible through your web browser at the specified URL (often http://localhost:8080/ or similar).
 
 ## Additional Information
-  * API Reference: [Postman Collection]()
-  * Project Assumptions & Notes: [Project Assumptions]()
-  * .env file example: [.env file]()
-  * .env.backend.dev file example: [.env.backend.dev file]()
+  * API Reference: [Postman Collection](https://documenter.getpostman.com/view/40177809/2sAYBa99Z5)
+  * Project Assumptions & Notes: [Project Assumptions](https://docs.google.com/document/d/12x1FOVpcvt6Y6U_igQtLAqvGuYgPU3DD6EIczFHexrM/edit?usp=sharing)
+  * .env file example: [.env file](https://drive.google.com/file/d/1M-NwBr571kRaszyfHLOhwgsWsk_EJyIb/view?usp=sharing)
+  * .env.backend.dev file example: [.env.backend.dev file](https://drive.google.com/file/d/1nOpSu-gT9NkKvuuzYV1SMu0qGHjE8FO4/view?usp=sharing)
